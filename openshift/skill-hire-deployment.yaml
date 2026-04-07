@@ -19,22 +19,15 @@ spec:
     spec:
       containers:
       - name: skill-hire
-        image: your-dockerhub-username/skill-hire:latest
+        image: moulisaideep/skill-hire:latest
         ports:
         - containerPort: 8080
         env:
         - name: MONGO_URI
-          value: mongodb://$(DB_USERNAME):$(DB_PASSWORD)@mongodb-service:27017/hiring_application?authSource=admin
-        - name: DB_USERNAME
           valueFrom:
             secretKeyRef:
               name: skill-hire-secrets
-              key: db-username
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: skill-hire-secrets
-              key: db-password
+              key: mongo-uri
         - name: AWS_ACCESS_KEY
           valueFrom:
             secretKeyRef:

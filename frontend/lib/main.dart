@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const SignupScreen(), 
+      home: const SignupScreen(),
       routes: {
         AdminLoginScreen.routeName: (ctx) => const AdminLoginScreen(),
         AdminDashboardScreen.routeName: (ctx) => const AdminDashboardScreen(),
