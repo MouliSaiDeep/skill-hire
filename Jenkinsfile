@@ -16,7 +16,7 @@
 
         stage('Build') {
             steps {
-                dir('hiring_application') {
+                dir('skill_hire') {
                     sh 'mvn clean package -DskipTests'
                 }
             }
@@ -24,7 +24,7 @@
 
         stage('Docker Build & Push') {
             steps {
-                dir('hiring_application') {
+                dir('skill_hire') {
                     sh 'docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} .'
                     sh 'docker build -t ${DOCKER_IMAGE}:latest .'
                     withDockerRegistry([credentialsId: 'dockerhub-id', url: '']) {
