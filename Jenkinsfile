@@ -7,11 +7,6 @@ pipeline {
         OPENSHIFT_CRED = 'openshift-credentials-id'
     }
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/MouliSaiDeep/skill-hire.git'
-            }
-        }
         stage('Build Backend') {
             steps {
                 dir('skill_hire') {
