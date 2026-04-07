@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
-import 'admin_login_screen.dart';
+
 
 class SignupScreen extends StatefulWidget {
   static const routeName = '/signup';
@@ -29,7 +29,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final List<String> _availableSkills = [
     'Java', 'Python', 'Flutter', 'Spring Boot', 
     'React', 'Node.js', 'AWS', 'Docker', 
-    'SQL', 'MongoDB'
+    'SQL', 'MongoDB','Jenkins','Ansible','OS','DBMS','C','Selenium'
   ];
   final Set<String> _selectedSkills = {};
 
@@ -135,15 +135,15 @@ class _SignupScreenState extends State<SignupScreen> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.blueAccent),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.admin_panel_settings),
-            tooltip: 'Admin Login',
-            onPressed: () {
-              Navigator.of(context).pushNamed(AdminLoginScreen.routeName);
-            },
-          )
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.admin_panel_settings),
+        //     tooltip: 'Admin Login',
+        //     onPressed: () {
+        //       Navigator.of(context).pushNamed(AdminLoginScreen.routeName);
+        //     },
+        //   )
+        // ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
