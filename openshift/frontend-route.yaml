@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend-route
+  labels:
+   app: skill-hire
+
+spec:
+ to:
+  kind: Service
+  name: frontend-service
+ port:
+  targetPort: 80
+ tls:
+  termination: edge
+  insecureEdgeTerminationPolicy: Redirect

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
 
-
 class SignupScreen extends StatefulWidget {
   static const routeName = '/signup';
 
@@ -27,9 +26,22 @@ class _SignupScreenState extends State<SignupScreen> {
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _availableSkills = [
-    'Java', 'Python', 'Flutter', 'Spring Boot', 
-    'React', 'Node.js', 'AWS', 'Docker', 
-    'SQL', 'MongoDB','Jenkins','Ansible','OS','DBMS','C','Selenium'
+    'Java',
+    'Python',
+    'Flutter',
+    'Spring Boot',
+    'React',
+    'Node.js',
+    'AWS',
+    'Docker',
+    'SQL',
+    'MongoDB',
+    'Jenkins',
+    'Ansible',
+    'OS',
+    'DBMS',
+    'C',
+    'Selenium',
   ];
   final Set<String> _selectedSkills = {};
 
@@ -46,13 +58,19 @@ class _SignupScreenState extends State<SignupScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_profileImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a profile picture'), backgroundColor: Colors.redAccent),
+        const SnackBar(
+          content: Text('Please select a profile picture'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
     if (_selectedSkills.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one skill'), backgroundColor: Colors.redAccent),
+        const SnackBar(
+          content: Text('Please select at least one skill'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
       return;
     }
@@ -78,18 +96,32 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (result['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message']), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       // Optional: Navigate to Admin login
       // Navigator.of(context).pushReplacementNamed(AdminLoginScreen.routeName);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message']), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool isPassword = false, TextInputType? keyboardType}) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool isPassword = false,
+    TextInputType? keyboardType,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
@@ -97,7 +129,8 @@ class _SignupScreenState extends State<SignupScreen> {
         obscureText: isPassword,
         keyboardType: keyboardType,
         style: const TextStyle(color: Colors.black87),
-        validator: (val) => val == null || val.isEmpty ? 'Please enter $label' : null,
+        validator: (val) =>
+            val == null || val.isEmpty ? 'Please enter $label' : null,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: Colors.black87),
@@ -130,7 +163,14 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Join SkillHire', style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, letterSpacing: 2)),
+        title: const Text(
+          'Join SkillHire',
+          style: TextStyle(
+            color: Colors.blueAccent,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 2,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -165,36 +205,70 @@ class _SignupScreenState extends State<SignupScreen> {
                         border: Border.all(color: Colors.blueAccent, width: 2),
                         image: _profileImage != null
                             ? DecorationImage(
-                                image: kIsWeb 
-                                  ? NetworkImage(_profileImage!.path) as ImageProvider
-                                  : FileImage(io.File(_profileImage!.path)),
+                                image: kIsWeb
+                                    ? NetworkImage(_profileImage!.path)
+                                          as ImageProvider
+                                    : FileImage(io.File(_profileImage!.path)),
                                 fit: BoxFit.cover,
                               )
                             : null,
                       ),
                       child: _profileImage == null
-                          ? const Icon(Icons.add_a_photo_outlined, size: 40, color: Colors.blueAccent)
+                          ? const Icon(
+                              Icons.add_a_photo_outlined,
+                              size: 40,
+                              color: Colors.blueAccent,
+                            )
                           : null,
                     ),
                   ),
                 ),
                 const SizedBox(height: 10),
                 const Center(
-                  child: Text('Profile Photo', style: TextStyle(color: Colors.black54)),
+                  child: Text(
+                    'Profile Photo',
+                    style: TextStyle(color: Colors.black54),
+                  ),
                 ),
                 const SizedBox(height: 25),
 
-                _buildTextField(_nameController, 'Full Name', Icons.person_outline),
-                _buildTextField(_emailController, 'Email Address', Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-                _buildTextField(_passwordController, 'Password', Icons.lock_outline, isPassword: true),
-                _buildTextField(_phoneController, 'Phone Number', Icons.phone_outlined, keyboardType: TextInputType.phone),
-                
+                _buildTextField(
+                  _nameController,
+                  'Full Name',
+                  Icons.person_outline,
+                ),
+                _buildTextField(
+                  _emailController,
+                  'Email Address',
+                  Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                _buildTextField(
+                  _passwordController,
+                  'Password',
+                  Icons.lock_outline,
+                  isPassword: true,
+                ),
+                _buildTextField(
+                  _phoneController,
+                  'Phone Number',
+                  Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                ),
+
                 const SizedBox(height: 15),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8),
-                  child: Text('Select Skills:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  child: Text(
+                    'Select Skills:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                 ),
-                
+
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
@@ -224,8 +298,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                           side: BorderSide(
-                            color: isSelected ? Colors.blueAccent : Colors.grey[400]!,
-                          )
+                            color: isSelected
+                                ? Colors.blueAccent
+                                : Colors.grey[400]!,
+                          ),
                         ),
                       );
                     }).toList(),
@@ -233,9 +309,13 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
 
                 const SizedBox(height: 40),
-                
+
                 _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.blueAccent,
+                        ),
+                      )
                     : ElevatedButton(
                         onPressed: _submit,
                         style: ElevatedButton.styleFrom(

@@ -63,7 +63,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       if (query.isEmpty) {
         _displayedCandidates = List.from(_allCandidates);
       } else {
-        _displayedCandidates = _allCandidates.where((c) => c.skills.toLowerCase().contains(query)).toList();
+        _displayedCandidates = _allCandidates
+            .where((c) => c.skills.toLowerCase().contains(query))
+            .toList();
       }
     });
   }
@@ -82,7 +84,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            (result['warning'] ?? '${candidate.name} has been selected! An email is being sent via AWS SES.')
+            (result['warning'] ??
+                    '${candidate.name} has been selected! An email is being sent via AWS SES.')
                 .toString(),
           ),
           backgroundColor: Colors.green,
@@ -91,7 +94,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']?.toString() ?? 'Failed to select candidate'),
+          content: Text(
+            result['message']?.toString() ?? 'Failed to select candidate',
+          ),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -99,7 +104,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _logout(BuildContext context) async {
-
     if (!mounted) return;
     Navigator.pushReplacementNamed(context, AdminLoginScreen.routeName);
   }
@@ -129,7 +133,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     decoration: InputDecoration(
                       labelText: 'Filter by Skill (e.g., Flutter)',
                       prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10.0)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
                   ),
                 ),
@@ -137,7 +143,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 // 2. Candidate List (ListView of reusable custom Cards)
                 Expanded(
                   child: _displayedCandidates.isEmpty
-                      ? const Center(child: Text('No matching candidates found.'))
+                      ? const Center(
+                          child: Text('No matching candidates found.'),
+                        )
                       : ListView.builder(
                           itemCount: _displayedCandidates.length,
                           itemBuilder: (context, index) {
@@ -145,7 +153,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             return CandidateCard(
                               candidate: candidate,
                               // Connect card action to logic
-                              onSelectPressed: () => _markUserAsSelected(candidate),
+                              onSelectPressed: () =>
+                                  _markUserAsSelected(candidate),
                             );
                           },
                         ),

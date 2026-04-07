@@ -38,7 +38,8 @@ class Candidate {
         email: 'alice.johnson@example.com',
         phone: '123-456-7890',
         skills: 'Flutter, Dart, Git, AWS',
-        photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Generic URL for testing
+        photoUrl:
+            'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Generic URL for testing
       ),
       Candidate(
         id: '2',
