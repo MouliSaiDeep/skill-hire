@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // For logout persistence
+// For logout persistence
 import '../models/candidate_model.dart';
 import '../widgets/candidate_card.dart';
 import 'admin_login_screen.dart';

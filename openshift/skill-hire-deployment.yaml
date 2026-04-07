@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skill-hire-deployment
+  labels:
+    app: skill-hire
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: skill-hire
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: skill-hire
+        tier: backend
+    spec:
+      containers:
+      - name: skill-hire
+        image: your-dockerhub-username/skill-hire:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: MONGO_URI
+          value: mongodb://$(DB_USERNAME):$(DB_PASSWORD)@mongodb-service:27017/hiring_application?authSource=admin
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: db-username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: db-password
+        - name: AWS_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: aws-access-key
+        - name: AWS_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: aws-secret-key
+        - name: S3_BUCKET_NAME
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: s3-bucket-name
+        - name: SES_SENDER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: ses-sender-email
+        - name: ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: admin-email
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: skill-hire-secrets
+              key: admin-password 
