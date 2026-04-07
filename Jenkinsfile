@@ -1,4 +1,4 @@
-﻿pipeline {
+pipeline {
     agent any
     environment {
         BACKEND_IMAGE = 'moulisaideep/skill-hire'
