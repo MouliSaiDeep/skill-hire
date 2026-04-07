@@ -57,15 +57,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   void _filterResults() {
-    String query = _filterController.text.toLowerCase();
-    setState(() {
-      if (query.isEmpty) {
+    final query = _filterController.text.trim();
+    final tokens = query
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    if (tokens.isEmpty) {
+      setState(() {
         _displayedCandidates = List.from(_allCandidates);
-      } else {
-        _displayedCandidates = _allCandidates
-            .where((c) => c.skills.toLowerCase().contains(query))
-            .toList();
-      }
+      });
+      return;
+    }
+
+    ApiService.fetchCandidatesBySkills(skills: tokens).then((candidates) {
+      if (!mounted) return;
+      setState(() {
+        _displayedCandidates = candidates;
+      });
+    }).catchError((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to filter candidates by skills'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
     });
   }
 
@@ -109,9 +127,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedCount = _allCandidates.where((c) => c.isSelected).length;
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F3EA),
       appBar: AppBar(
-        centerTitle: true,
         title: const Text('Admin Dashboard'),
         actions: [
           IconButton(
@@ -122,95 +142,111 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // 1. Skill Filter Box
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        offset: const Offset(0, 4),
-                        blurRadius: 10,
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _filterController,
-                    decoration: InputDecoration(
-                      labelText: 'Search candidates by skill (e.g., Flutter)',
-                      labelStyle: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
-                      prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                        borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-                      ),
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            _metricTile('Candidates', _allCandidates.length.toString()),
+                            _metricTile('Filtered', _displayedCandidates.length.toString()),
+                            _metricTile('Selected', selectedCount.toString()),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _filterController,
+                          decoration: InputDecoration(
+                            labelText: 'Filter by skill words separated by comma (example: Flutter, AWS)',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _filterController.text.isNotEmpty
+                                ? IconButton(
+                                    onPressed: () {
+                                      _filterController.clear();
+                                      _filterResults();
+                                    },
+                                    icon: const Icon(Icons.close),
+                                  )
+                                : null,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: _displayedCandidates.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No candidates found for that exact skill set.',
+                              style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
+                            ),
+                          )
+                        : LayoutBuilder(
+                            builder: (context, gridConstraints) {
+                              int crossAxisCount = 1;
+                              if (gridConstraints.maxWidth >= 1200) {
+                                crossAxisCount = 4;
+                              } else if (gridConstraints.maxWidth >= 900) {
+                                crossAxisCount = 3;
+                              } else if (gridConstraints.maxWidth >= 560) {
+                                crossAxisCount = 2;
+                              }
 
-                // 2. Candidate List
-                Expanded(
-                  child: _displayedCandidates.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.person_search_outlined, size: 60, color: Colors.grey.shade400),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No matching candidates found.',
-                                style: TextStyle(color: Colors.grey.shade600, fontSize: 16, fontWeight: FontWeight.w500),
-                              ),
-                            ],
+                              return GridView.builder(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: crossAxisCount,
+                                  childAspectRatio: 0.65,
+                                  crossAxisSpacing: 18,
+                                  mainAxisSpacing: 18,
+                                ),
+                                itemCount: _displayedCandidates.length,
+                                itemBuilder: (context, index) {
+                                  final candidate = _displayedCandidates[index];
+                                  return CandidateCard(
+                                    candidate: candidate,
+                                    onSelectPressed: () => _markUserAsSelected(candidate),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                        )
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            int crossAxisCount = 1;
-                            if (constraints.maxWidth >= 1200) {
-                              crossAxisCount = 4;
-                            } else if (constraints.maxWidth >= 900) {
-                              crossAxisCount = 3;  // "three flippable cards per row for laptop screen width"
-                            } else if (constraints.maxWidth >= 550) {
-                              crossAxisCount = 2;
-                            }
-
-                            return GridView.builder(
-                              padding: const EdgeInsets.all(24.0),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: crossAxisCount,
-                                childAspectRatio: 0.65, // Adjusts height vs width to make it vertically rectangular
-                                crossAxisSpacing: 24.0,
-                                mainAxisSpacing: 24.0,
-                              ),
-                              itemCount: _displayedCandidates.length,
-                              itemBuilder: (context, index) {
-                                final candidate = _displayedCandidates[index];
-                                return CandidateCard(
-                                  candidate: candidate,
-                                  onSelectPressed: () => _markUserAsSelected(candidate),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
+    );
+  }
+
+  Widget _metricTile(String title, String value) {
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F5EE),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE6DCC8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(color: Colors.grey.shade700)),
+          const SizedBox(height: 6),
+          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+        ],
+      ),
     );
   }
 }

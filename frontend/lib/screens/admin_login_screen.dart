@@ -1,97 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-import 'admin_dashboard_screen.dart';
+
 import '../services/api_service.dart';
+import 'admin_dashboard_screen.dart';
 
 class AdminLoginScreen extends StatelessWidget {
   static const String routeName = '/admin-login';
 
   const AdminLoginScreen({super.key});
 
-  Duration get loginTime => const Duration(milliseconds: 2250);
-
   Future<String?> _authUser(LoginData data) async {
-    await Future.delayed(loginTime);
+    final email = (data.name).trim();
     final result = await ApiService.adminLogin(
-      email: data.name,
+      email: email,
       password: data.password,
     );
 
     if (result['success'] == true) {
       return null;
     }
-    return result['message']?.toString() ?? 'Invalid Admin Credentials';
+    return result['message']?.toString() ?? 'Invalid admin credentials';
   }
 
-  Future<String?> _recoverPassword(String name) async {
-    // Optional: Logic for password recovery
-    return null;
+  Future<String?> _registerUser(SignupData data) async {
+    final email = (data.name ?? '').trim();
+    if (!email.contains('@')) {
+      return 'Please enter a valid email for admin registration';
+    }
+
+    final recruiterName = email.split('@').first;
+    final result = await ApiService.adminRegister(
+      recruiterName: recruiterName,
+      email: email,
+      password: data.password ?? '',
+    );
+
+    if (result['success'] == true) {
+      return null;
+    }
+    return result['message']?.toString() ?? 'Admin registration failed';
+  }
+
+  Future<String?> _recoverPassword(String _) async {
+    return 'Password recovery is not enabled';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FlutterLogin(
-        title: 'Admin Login',
+        title: 'SkillHire Admin',
         onLogin: _authUser,
+        onSignup: _registerUser,
         onRecoverPassword: _recoverPassword,
-        onSignup: null,
+        userType: LoginUserType.email,
         onSubmitAnimationCompleted: () {
-          Navigator.of(
-            context,
-          ).pushReplacementNamed(AdminDashboardScreen.routeName);
+          Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.routeName);
         },
-        messages: LoginMessages(
-          userHint: 'Admin Email',
-          passwordHint: 'Password',
-          confirmPasswordHint: 'Confirm',
-          loginButton: 'LOG IN',
-        ),
         theme: LoginTheme(
-          primaryColor: Colors.white,
-          accentColor: Colors.blue,
-
-          // 1. Fix the Title (ADMIN PORTAL) visibility
+          primaryColor: const Color(0xFFF7F3EA),
+          accentColor: const Color(0xFF0E1A2B),
           titleStyle: const TextStyle(
-            color: Colors.blueAccent,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 4,
+            color: Color(0xFF0E1A2B),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
           ),
-
-          // 2. Fix the Card and Input Field visibility
           cardTheme: CardTheme(
             color: Colors.white,
-            elevation: 5,
-            margin: const EdgeInsets.only(top: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+            elevation: 10,
+            margin: const EdgeInsets.only(top: 18),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           ),
-
-          // 3. Fix the icons and input text colors
           inputTheme: InputDecorationTheme(
             filled: true,
-            fillColor:
-                Colors.grey[200], // Light grey background for the input bars
-            prefixIconColor: Colors.blueAccent, // This makes your icons visible
-            suffixIconColor:
-                Colors.blueAccent, // This makes the password "eye" visible
-            labelStyle: const TextStyle(color: Colors.black87),
+            fillColor: const Color(0xFFF8F5EE),
+            prefixIconColor: const Color(0xFF0E1A2B),
+            suffixIconColor: const Color(0xFF0E1A2B),
             focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFC9A45B), width: 1.5),
             ),
             enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.transparent),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
           ),
-
-          // 4. Style the Login Button
           buttonTheme: const LoginButtonTheme(
-            backgroundColor: Colors.blueAccent,
-            highlightColor: Colors.blue,
+            backgroundColor: Color(0xFF0E1A2B),
+            splashColor: Color(0xFFC9A45B),
           ),
+          bodyStyle: const TextStyle(color: Color(0xFF1A2738)),
+          textFieldStyle: const TextStyle(color: Color(0xFF1A2738)),
+        ),
+        messages: LoginMessages(
+          userHint: 'Admin Email',
+          loginButton: 'SIGN IN',
+          signupButton: 'CREATE ADMIN',
+          confirmPasswordHint: 'Confirm Password',
+          recoverPasswordButton: 'RECOVER',
         ),
       ),
     );
