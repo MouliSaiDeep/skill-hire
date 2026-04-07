@@ -1,0 +1,30 @@
+services:
+  backend:
+    build:
+      context: ./skill_hire
+      dockerfile: Dockerfile
+    container_name: skillhire-backend
+    restart: unless-stopped
+    env_file:
+      - ./skill_hire/.env
+    ports:
+      - "8080:8080"
+    networks:
+      - skillhire-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skillhire-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    networks:
+      - skillhire-net
+
+networks:
+  skillhire-net:
+    driver: bridge
