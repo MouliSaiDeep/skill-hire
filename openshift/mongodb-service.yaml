@@ -11,5 +11,5 @@ spec:
       targetPort: 27017
   selector:
     app: skill-hire
-    tier: database 
-clusterIP: None
+    tier: database
+  type: ClusterIP
