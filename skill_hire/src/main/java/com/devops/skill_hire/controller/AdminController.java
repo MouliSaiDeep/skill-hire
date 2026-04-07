@@ -46,13 +46,53 @@ public class AdminController {
 	}
 
 	@GetMapping("/candidates")
-	public ResponseEntity<List<Map<String, Object>>> listCandidates(@RequestParam(required = false) String skill) {
-		List<User> users = (skill == null || skill.isBlank())
-				? userRepository.findAll()
-				: userRepository.findBySkill(skill);
+	public ResponseEntity<List<Map<String, Object>>> listCandidates(
+			@RequestParam(required = false) String skill,
+			@RequestParam(required = false) List<String> skills) {
+		List<String> normalizedSkills = normalizeSkills(skill, skills);
+
+		List<User> users;
+		if (normalizedSkills.isEmpty()) {
+			users = userRepository.findAll();
+		} else if (normalizedSkills.size() == 1) {
+			users = userRepository.findBySkill(normalizedSkills.get(0));
+		} else {
+			users = userRepository.findAll().stream()
+					.filter(user -> hasAllSkills(user, normalizedSkills))
+					.collect(Collectors.toList());
+		}
 
 		List<Map<String, Object>> response = users.stream().map(this::toCandidateResponse).collect(Collectors.toList());
 		return ResponseEntity.ok(response);
+	}
+
+	private List<String> normalizeSkills(String skill, List<String> skills) {
+		if (skills != null && !skills.isEmpty()) {
+			return skills.stream()
+					.filter(s -> s != null && !s.isBlank())
+					.map(String::trim)
+					.collect(Collectors.toList());
+		}
+
+		if (skill == null || skill.isBlank()) {
+			return List.of();
+		}
+
+		return List.of(skill.trim());
+	}
+
+	private boolean hasAllSkills(User user, List<String> requiredSkills) {
+		if (user.getSkills() == null || user.getSkills().isEmpty()) {
+			return false;
+		}
+
+		List<String> userSkills = user.getSkills().stream()
+				.filter(s -> s != null && !s.isBlank())
+				.map(String::trim)
+				.collect(Collectors.toList());
+
+		return requiredSkills.stream().allMatch(required ->
+				userSkills.stream().anyMatch(userSkill -> userSkill.equalsIgnoreCase(required)));
 	}
 
 	@PostMapping("/candidates/{id}/select")

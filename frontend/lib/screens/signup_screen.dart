@@ -1,8 +1,11 @@
 import 'dart:io' as io;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../services/api_service.dart';
+import 'admin_login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   static const routeName = '/signup';
@@ -23,19 +26,10 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isLoading = false;
 
   final ImagePicker _picker = ImagePicker();
+  String _selectedGender = '';
+  final Set<String> _selectedSkills = {};
 
-  bool _isMale = false;
-  bool _isFemale = false;
-  bool _isOther = false;
-
-  String get _selectedGender {
-    if (_isMale) return 'Male';
-    if (_isFemale) return 'Female';
-    if (_isOther) return 'Other';
-    return '';
-  }
-
-  final List<String> _availableSkills = [
+  final List<String> _availableSkills = const [
     'Java',
     'Python',
     'Flutter',
@@ -53,52 +47,32 @@ class _SignupScreenState extends State<SignupScreen> {
     'C',
     'Selenium',
   ];
-  final Set<String> _selectedSkills = {};
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() {
-        _profileImage = image;
-      });
+      setState(() => _profileImage = image);
     }
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
     if (_profileImage == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a profile picture'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      _showError('Please select a profile picture');
       return;
     }
     if (_selectedGender.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select your gender'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      _showError('Please select your gender');
       return;
     }
     if (_selectedSkills.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select at least one skill'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      _showError('Please select at least one skill');
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    var result = await ApiService.signup(
+    setState(() => _isLoading = true);
+    final result = await ApiService.signup(
       name: _nameController.text.trim(),
       email: _emailController.text.trim(),
       gender: _selectedGender,
@@ -106,348 +80,242 @@ class _SignupScreenState extends State<SignupScreen> {
       skills: _selectedSkills.toList(),
       imageFile: _profileImage!,
     );
-
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
 
     if (!mounted) return;
 
-    if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message']?.toString() ?? 'Request finished'),
+        backgroundColor: result['success'] == true ? Colors.green : Colors.redAccent,
+      ),
+    );
   }
 
-  Widget _buildTextField(
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+    );
+  }
+
+  Widget _textField(
     TextEditingController controller,
     String label,
     IconData icon, {
     TextInputType? keyboardType,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.black87),
-        validator: (val) =>
-            val == null || val.isEmpty ? 'Please enter $label' : null,
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: const TextStyle(color: Colors.black87),
-          prefixIcon: Icon(icon, color: Colors.blueAccent),
-          filled: true,
-          fillColor: Colors.grey[200],
-          isDense: true, 
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.blueAccent, width: 2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.transparent),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.redAccent),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 2),
-          ),
-        ),
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: (val) => (val == null || val.trim().isEmpty) ? 'Please enter $label' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
       ),
+    );
+  }
+
+  Widget _genderChip(String value, IconData icon) {
+    final selected = _selectedGender == value;
+    return ChoiceChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: selected ? Colors.white : Colors.black54),
+          const SizedBox(width: 6),
+          Text(value),
+        ],
+      ),
+      selected: selected,
+      onSelected: (_) => setState(() => _selectedGender = value),
+      selectedColor: const Color(0xFF0E1A2B),
+      labelStyle: TextStyle(color: selected ? Colors.white : Colors.black87),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Candidate Application',
-          style: TextStyle(
-            color: Colors.blueAccent,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF6EFE3), Color(0xFFE6EBF6), Color(0xFFF6EFE3)],
           ),
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.blueAccent),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Top section: Left Image Picker (Passport size), Right Details
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Left Side: Image Picker
-                    GestureDetector(
-                      onTap: _pickImage,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 980),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            width: 110,
-                            height: 140, // Passport scale ratio (~3.5x4.5)
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.blueAccent, width: 2),
-                              image: _profileImage != null
-                                  ? DecorationImage(
-                                      image: kIsWeb
-                                          ? NetworkImage(_profileImage!.path)
-                                                as ImageProvider
-                                          : FileImage(io.File(_profileImage!.path)),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'SkillHire Candidate Application',
+                                      style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text('A polished gateway to your next engineering opportunity.'),
+                                  ],
+                                ),
+                              ),
+                              TextButton.icon(
+                                onPressed: () => Navigator.of(context).pushNamed(AdminLoginScreen.routeName),
+                                icon: const Icon(Icons.admin_panel_settings_outlined),
+                                label: const Text('Admin Portal'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final compact = constraints.maxWidth < 760;
+                              if (compact) {
+                                return Column(
+                                  children: [
+                                    _photoPicker(),
+                                    const SizedBox(height: 16),
+                                    _detailsSection(),
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _photoPicker(),
+                                  const SizedBox(width: 20),
+                                  Expanded(child: _detailsSection()),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 18),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 8,
+                            children: [
+                              _genderChip('Male', Icons.male),
+                              _genderChip('Female', Icons.female),
+                              _genderChip('Other', Icons.transgender),
+                            ],
+                          ),
+                          const SizedBox(height: 18),
+                          const Text('Core Skills', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _availableSkills.map((skill) {
+                              final selected = _selectedSkills.contains(skill);
+                              return FilterChip(
+                                selected: selected,
+                                label: Text(skill),
+                                onSelected: (on) {
+                                  setState(() {
+                                    if (on) {
+                                      _selectedSkills.add(skill);
+                                    } else {
+                                      _selectedSkills.remove(skill);
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _submit,
+                              child: _isLoading
+                                  ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Text('Submit Application'),
                             ),
-                            child: _profileImage == null
-                                ? const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_a_photo_outlined,
-                                        size: 40,
-                                        color: Colors.blueAccent,
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        'Photo',
-                                        style: TextStyle(
-                                          color: Colors.blueAccent,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      )
-                                    ],
-                                  )
-                                : null,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    
-                    // Right Side: Basic Form Details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          _buildTextField(
-                            _nameController,
-                            'Full Name',
-                            Icons.person_outline,
-                          ),
-                          _buildTextField(
-                            _emailController,
-                            'Email Address',
-                            Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          _buildTextField(
-                            _phoneController,
-                            'Phone Number',
-                            Icons.phone_outlined,
-                            keyboardType: TextInputType.phone,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 25),
-                
-                // Gender Selection (Checkboxes)
-                const Text(
-                  'Gender',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    // Male
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _isMale,
-                          activeColor: Colors.blueAccent,
-                          onChanged: (val) {
-                            setState(() {
-                              _isMale = val ?? false;
-                              if (_isMale) {
-                                _isFemale = false;
-                                _isOther = false;
-                              }
-                            });
-                          },
-                        ),
-                        const Text('Male'),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-                    // Female
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _isFemale,
-                          activeColor: Colors.blueAccent,
-                          onChanged: (val) {
-                            setState(() {
-                              _isFemale = val ?? false;
-                              if (_isFemale) {
-                                _isMale = false;
-                                _isOther = false;
-                              }
-                            });
-                          },
-                        ),
-                        const Text('Female'),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-                    // Other
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Checkbox(
-                          value: _isOther,
-                          activeColor: Colors.blueAccent,
-                          onChanged: (val) {
-                            setState(() {
-                              _isOther = val ?? false;
-                              if (_isOther) {
-                                _isMale = false;
-                                _isFemale = false;
-                              }
-                            });
-                          },
-                        ),
-                        const Text('Other'),
-                      ],
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // Skills
-                const Text(
-                  'Select Skills:',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: _availableSkills.map((skill) {
-                      final isSelected = _selectedSkills.contains(skill);
-                      return FilterChip(
-                        label: Text(skill),
-                        selected: isSelected,
-                        onSelected: (bool selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedSkills.add(skill);
-                            } else {
-                              _selectedSkills.remove(skill);
-                            }
-                          });
-                        },
-                        selectedColor: Colors.blueAccent.withValues(alpha: 0.2),
-                        checkmarkColor: Colors.blueAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: isSelected
-                                ? Colors.blueAccent
-                                : Colors.grey[400]!,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Submit Button -> Changed to 'APPLY'
-                _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.blueAccent,
-                        ),
-                      )
-                    : ElevatedButton(
-                        onPressed: _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 3,
-                        ),
-                        child: const Text(
-                          'APPLY',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                const SizedBox(height: 30),
-              ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _photoPicker() {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickImage,
+          child: Container(
+            width: 190,
+            height: 230,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFC9A45B), width: 1.8),
+              color: Colors.white,
+              image: _profileImage != null
+                  ? DecorationImage(
+                      image: kIsWeb ? NetworkImage(_profileImage!.path) as ImageProvider : FileImage(io.File(_profileImage!.path)),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: _profileImage == null
+                ? const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_a_photo_outlined, size: 42),
+                      SizedBox(height: 10),
+                      Text('Upload Portrait', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ],
+                  )
+                : null,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text('Passport-style photo preferred'),
+      ],
+    );
+  }
+
+  Widget _detailsSection() {
+    return Column(
+      children: [
+        _textField(_nameController, 'Full Name', Icons.badge_outlined),
+        const SizedBox(height: 12),
+        _textField(
+          _emailController,
+          'Email Address',
+          Icons.alternate_email,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        const SizedBox(height: 12),
+        _textField(
+          _phoneController,
+          'Phone Number',
+          Icons.phone_android,
+          keyboardType: TextInputType.phone,
+        ),
+      ],
     );
   }
 
