@@ -5,6 +5,7 @@ class Candidate {
   final String phone;
   final String skills;
   final String photoUrl;
+  final String gender;
   bool isSelected;
 
   Candidate({
@@ -14,6 +15,7 @@ class Candidate {
     required this.phone,
     required this.skills,
     required this.photoUrl,
+    this.gender = 'Not Specified',
     this.isSelected = false,
   });
 
@@ -25,6 +27,7 @@ class Candidate {
       phone: json['phone']?.toString() ?? '',
       skills: json['skills']?.toString() ?? '',
       photoUrl: json['photoUrl']?.toString() ?? '',
+      gender: json['gender']?.toString() ?? 'Not Specified',
       isSelected: json['isSelected'] == true,
     );
   }
@@ -40,6 +43,7 @@ class Candidate {
         skills: 'Flutter, Dart, Git, AWS',
         photoUrl:
             'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Generic URL for testing
+        gender: 'Female',
       ),
       Candidate(
         id: '2',
@@ -48,6 +52,7 @@ class Candidate {
         phone: '987-654-3210',
         skills: 'Java, Spring Boot, MySQL, Docker',
         photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+        gender: 'Male',
       ),
       Candidate(
         id: '3',
@@ -56,6 +61,7 @@ class Candidate {
         phone: '555-123-4567',
         skills: 'Flutter, Firebase, AWS SES, CI/CD',
         photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+        gender: 'Not Specified',
       ),
       Candidate(
         id: '4',
@@ -64,6 +70,7 @@ class Candidate {
         phone: '555-987-6543',
         skills: 'Python, Django, AWS, OpenShift',
         photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+        gender: 'Female',
       ),
     ];
   }

@@ -23,7 +23,7 @@ class ApiService {
   static Future<Map<String, dynamic>> signup({
     required String name,
     required String email,
-    required String password,
+    required String gender,
     required String phone,
     required List<String> skills,
     required XFile imageFile,
@@ -33,7 +33,7 @@ class ApiService {
 
       request.fields['name'] = name;
       request.fields['email'] = email;
-      request.fields['password'] = password;
+      request.fields['gender'] = gender;
       request.fields['phone'] = phone;
       // Spring's @RequestParam List<String> handles comma separated values cleanly.
       request.fields['skills'] = skills.join(',');

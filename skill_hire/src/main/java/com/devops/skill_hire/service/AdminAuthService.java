@@ -1,4 +1,4 @@
- package com.devops.skill_hire.service;
+package com.devops.skill_hire.service;
 
 import java.util.Map;
 

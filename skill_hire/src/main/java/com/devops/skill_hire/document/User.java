@@ -18,7 +18,7 @@ public class User {
     private String name;
     @Indexed(unique = true)
     private String email;
-    private String password;
+    private String gender;
     private String phone;
     private List<String> skills;
     private String picUrl;

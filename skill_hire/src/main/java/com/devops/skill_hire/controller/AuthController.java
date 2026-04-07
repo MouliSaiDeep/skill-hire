@@ -26,7 +26,7 @@ public class AuthController {
     public ResponseEntity<?> signup(
             @RequestParam String name,
             @RequestParam String email,
-            @RequestParam String password,
+            @RequestParam String gender,
             @RequestParam String phone,
             @RequestParam List<String> skills,
             @RequestParam MultipartFile pic)
@@ -38,7 +38,7 @@ public class AuthController {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
-        user.setPassword(encoder.encode(password));
+        user.setGender(gender);
         user.setPhone(phone);
         user.setSkills(skills);
         user.setPicUrl(picUrl);
