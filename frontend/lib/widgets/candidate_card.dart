@@ -47,8 +47,11 @@ class _CandidateCardState extends State<CandidateCard> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            width: 130,
+            height: 130,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: Colors.white,
               boxShadow: [
                 BoxShadow(
                   color: Colors.blueAccent.withValues(alpha: 0.2),
@@ -57,10 +60,16 @@ class _CandidateCardState extends State<CandidateCard> {
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 65, // Generous avatar size for passport vibe
-              backgroundColor: Colors.white,
-              backgroundImage: NetworkImage(widget.candidate.photoUrl),
+            child: ClipOval(
+              child: widget.candidate.photoUrl.isNotEmpty
+                  ? Image.network(
+                      widget.candidate.photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.person, size: 65, color: Colors.grey.shade400);
+                      },
+                    )
+                  : Icon(Icons.person, size: 65, color: Colors.grey.shade400),
             ),
           ),
           const SizedBox(height: 24.0),

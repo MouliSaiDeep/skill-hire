@@ -85,6 +85,7 @@ public class AdminController {
 				"phone", user.getPhone(),
 				"skills", skills,
 				"photoUrl", user.getPicUrl() == null ? "" : user.getPicUrl(),
+				"gender", user.getGender() == null ? "Not Specified" : user.getGender(),
 				"isSelected", user.isSelected());
 	}
 }

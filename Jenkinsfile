@@ -48,9 +48,6 @@
                 withKubeConfig([credentialsId: OPENSHIFT_CRED, serverUrl: OPENSHIFT_SERVER]) {
                     dir('openshift') {
                         sh 'kubectl apply -f skill-hire-secrets.yaml'
-                        sh 'kubectl apply -f mongodb-pvc.yaml'
-                        sh 'kubectl apply -f mongodb-deployment.yaml'
-                        sh 'kubectl apply -f mongodb-service.yaml'
                         sh 'kubectl apply -f skill-hire-deployment.yaml'
                         sh 'kubectl apply -f skill-hire-service.yaml'
                         sh 'kubectl apply -f skill-hire-route.yaml'
