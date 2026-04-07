@@ -1,6 +1,9 @@
 pipeline {
     agent any
-
+    tools {
+        maven 'CSE_Maven'
+        jdk 'java'
+    }
     environment {
         BACKEND_IMAGE = 'moulisaideep/skill-hire'
         FRONTEND_IMAGE = 'moulisaideep/skill-hire-frontend'
