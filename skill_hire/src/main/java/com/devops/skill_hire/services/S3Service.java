@@ -2,6 +2,7 @@ package com.devops.skill_hire.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -24,14 +25,24 @@ public class S3Service {
             @Value("${aws.access-key}") String accessKey,
             @Value("${aws.secret-key}") String secretKey,
             @Value("${aws.region}") String region) {
-        this.s3Client = S3Client.builder()
-                .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-                .build();
+        if (StringUtils.hasText(accessKey) && StringUtils.hasText(secretKey)) {
+            this.s3Client = S3Client.builder()
+                    .region(Region.of(region))
+                    .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+                    .build();
+        } else {
+            this.s3Client = null;
+        }
     }
 
     public String uploadFile(MultipartFile file)
             throws IOException {
+        if (s3Client == null) {
+            throw new IllegalStateException("AWS S3 credentials are not configured");
+        }
+        if (!StringUtils.hasText(bucketName)) {
+            throw new IllegalStateException("aws.s3.bucket-name is not configured");
+        }
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)

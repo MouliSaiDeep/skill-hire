@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // For logout persistence
 import '../models/candidate_model.dart';
+import '../services/api_service.dart';
 import '../widgets/candidate_card.dart';
 import 'admin_login_screen.dart';
 
@@ -10,7 +11,7 @@ class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  _AdminDashboardScreenState createState() => _AdminDashboardScreenState();
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
@@ -34,15 +35,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _loadCandidates() async {
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    _allCandidates = Candidate.getMockData();
-
-    setState(() {
-      _displayedCandidates = List.from(_allCandidates);
-      _isLoading = false;
-    });
+    try {
+      final candidates = await ApiService.fetchCandidates();
+      if (!mounted) return;
+      setState(() {
+        _allCandidates = candidates;
+        _displayedCandidates = List.from(_allCandidates);
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to load candidates from backend'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   void _filterResults() {
@@ -57,22 +69,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _markUserAsSelected(Candidate candidate) async {
-  
-    setState(() {
-      candidate.isSelected = !candidate.isSelected;
-    });
+    final result = await ApiService.selectCandidate(candidate.id);
+
+    if (result['success'] == true) {
+      setState(() {
+        candidate.isSelected = true;
+      });
+    }
 
     if (!mounted) return;
-    if (candidate.isSelected) {
+    if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${candidate.name} has been selected! An email is being sent via AWS SES.'),
+          content: Text(
+            (result['warning'] ?? '${candidate.name} has been selected! An email is being sent via AWS SES.')
+                .toString(),
+          ),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('User deselected.')),
+        SnackBar(
+          content: Text(result['message']?.toString() ?? 'Failed to select candidate'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     }
   }
@@ -84,7 +105,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   @override
-  Widget build(BuildContext Context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -92,7 +113,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => _logout(Context),
+            onPressed: () => _logout(context),
           ),
         ],
       ),

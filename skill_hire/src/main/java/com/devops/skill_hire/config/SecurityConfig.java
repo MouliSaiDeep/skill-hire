@@ -32,6 +32,7 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.POST, "/api/admin/login", "/api/admin/register").permitAll()
+						.requestMatchers("/api/admin/**").permitAll()
 						.requestMatchers("/api/auth/**").permitAll()
 						.anyRequest().authenticated())
 				.httpBasic(Customizer.withDefaults());

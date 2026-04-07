@@ -24,13 +24,20 @@ public class SesService {
 					 @Value("${aws.region:us-east-1}") String region,
 					 @Value("${aws.ses.sender:}") String sender) {
 		this.sender = sender;
-		this.sesClient = SesClient.builder()
-				.region(Region.of(region))
-				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-				.build();
+		if (StringUtils.hasText(accessKey) && StringUtils.hasText(secretKey)) {
+			this.sesClient = SesClient.builder()
+					.region(Region.of(region))
+					.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
+					.build();
+		} else {
+			this.sesClient = null;
+		}
 	}
 
 	public void sendHireEmail(String toEmail, String userName) {
+		if (sesClient == null) {
+			throw new IllegalStateException("AWS SES credentials are not configured");
+		}
 		if (!StringUtils.hasText(sender)) {
 			throw new IllegalStateException("aws.ses.sender is not configured");
 		}

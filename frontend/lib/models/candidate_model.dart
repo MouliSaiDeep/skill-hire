@@ -17,6 +17,18 @@ class Candidate {
     this.isSelected = false,
   });
 
+  factory Candidate.fromJson(Map<String, dynamic> json) {
+    return Candidate(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString() ?? '',
+      skills: json['skills']?.toString() ?? '',
+      photoUrl: json['photoUrl']?.toString() ?? '',
+      isSelected: json['isSelected'] == true,
+    );
+  }
+
   // Mock data generator for testing
   static List<Candidate> getMockData() {
     return [

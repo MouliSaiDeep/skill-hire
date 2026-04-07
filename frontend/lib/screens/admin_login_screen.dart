@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'admin_dashboard_screen.dart';
+import '../services/api_service.dart';
 
 class AdminLoginScreen extends StatelessWidget {
   static const String routeName = '/admin-login';
@@ -11,14 +12,12 @@ class AdminLoginScreen extends StatelessWidget {
 
   Future<String?> _authUser(LoginData data) async {
     await Future.delayed(loginTime);
+    final result = await ApiService.adminLogin(email: data.name, password: data.password);
 
-    const String correctEmail = 'admin@college.edu';
-    const String correctPassword = 'password123';
-
-    if (data.name == correctEmail && data.password == correctPassword) {
+    if (result['success'] == true) {
       return null;
     }
-    return 'Invalid Admin Credentials'; 
+    return result['message']?.toString() ?? 'Invalid Admin Credentials';
   }
 
   Future<String?> _recoverPassword(String name) async {

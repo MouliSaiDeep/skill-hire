@@ -16,7 +16,7 @@ class CandidateCard extends StatelessWidget {
     return Card(
       elevation: 2.0,
       margin: const EdgeInsets.all(8.0),
-      color: candidate.isSelected ? Colors.green.withOpacity(0.05) : Colors.white,
+      color: candidate.isSelected ? Colors.green.withValues(alpha: 0.05) : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -60,7 +60,9 @@ class CandidateCard extends StatelessWidget {
               width: 50.0,
               height: 50.0,
               decoration: BoxDecoration(
-                color: candidate.isSelected ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                color: candidate.isSelected
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : Colors.blue.withValues(alpha: 0.1),
                 border: Border.all(color: candidate.isSelected ? Colors.green : Colors.blue),
                 borderRadius: BorderRadius.circular(10.0), // Match the sketch's rounded look
               ),

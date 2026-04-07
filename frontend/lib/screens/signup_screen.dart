@@ -219,7 +219,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             }
                           });
                         },
-                        selectedColor: Colors.blueAccent.withOpacity(0.2),
+                        selectedColor: Colors.blueAccent.withValues(alpha: 0.2),
                         checkmarkColor: Colors.blueAccent,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
