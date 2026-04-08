@@ -1,4 +1,4 @@
-pipeline {
+﻿pipeline {
     agent any
     tools {
         maven 'Maven'
@@ -23,8 +23,7 @@ pipeline {
         stage('Docker Build & Push Backend') {
             steps {
                 dir('skill_hire') {
-                    bat 'docker build -t %BACKEND_IMAGE%:%BUILD_NUMBER% .'
-                    bat 'docker build -t %BACKEND_IMAGE%:latest .'
+                    bat 'docker build --no-cache -t %BACKEND_IMAGE%:%BUILD_NUMBER% -t %BACKEND_IMAGE%:latest .'
                     withDockerRegistry([credentialsId: 'dockerhub-id', url: '']) {
                         bat 'docker push %BACKEND_IMAGE%:%BUILD_NUMBER%'
                         bat 'docker push %BACKEND_IMAGE%:latest'
@@ -36,8 +35,7 @@ pipeline {
         stage('Docker Build & Push Frontend') {
             steps {
                 dir('frontend') {
-                    bat 'docker build -t %FRONTEND_IMAGE%:%BUILD_NUMBER% .'
-                    bat 'docker build -t %FRONTEND_IMAGE%:latest .'
+                    bat 'docker build --no-cache -t %FRONTEND_IMAGE%:%BUILD_NUMBER% -t %FRONTEND_IMAGE%:latest .'
                     withDockerRegistry([credentialsId: 'dockerhub-id', url: '']) {
                         bat 'docker push %FRONTEND_IMAGE%:%BUILD_NUMBER%'
                         bat 'docker push %FRONTEND_IMAGE%:latest'

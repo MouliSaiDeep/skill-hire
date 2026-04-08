@@ -20,6 +20,7 @@ spec:
       containers:
       - name: skill-hire
         image: moulisaideep/skill-hire:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
