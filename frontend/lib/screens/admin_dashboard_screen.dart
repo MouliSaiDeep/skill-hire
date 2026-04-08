@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/candidate_model.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 import '../widgets/candidate_card.dart';
 import 'admin_login_screen.dart';
 
@@ -14,22 +15,19 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
-  final TextEditingController _filterController = TextEditingController();
   List<Candidate> _allCandidates = [];
   List<Candidate> _displayedCandidates = [];
+  final Set<String> _selectedSkills = <String>{};
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadCandidates();
-    _filterController.addListener(_filterResults);
   }
 
   @override
   void dispose() {
-    _filterController.removeListener(_filterResults);
-    _filterController.dispose();
     super.dispose();
   }
 
@@ -39,7 +37,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       if (!mounted) return;
       setState(() {
         _allCandidates = candidates;
-        _displayedCandidates = List.from(_allCandidates);
+        _applySkillFilter();
         _isLoading = false;
       });
     } catch (_) {
@@ -56,35 +54,53 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
   }
 
-  void _filterResults() {
-    final query = _filterController.text.trim();
-    final tokens = query
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+  void _toggleSkill(String skill) {
+    setState(() {
+      if (_selectedSkills.contains(skill)) {
+        _selectedSkills.remove(skill);
+      } else {
+        _selectedSkills.add(skill);
+      }
+      _applySkillFilter();
+    });
+  }
 
-    if (tokens.isEmpty) {
-      setState(() {
-        _displayedCandidates = List.from(_allCandidates);
-      });
+  void _clearSkillFilter() {
+    setState(() {
+      _selectedSkills.clear();
+      _applySkillFilter();
+    });
+  }
+
+  void _applySkillFilter() {
+    if (_selectedSkills.isEmpty) {
+      _displayedCandidates = List.from(_allCandidates);
       return;
     }
 
-    ApiService.fetchCandidatesBySkills(skills: tokens).then((candidates) {
-      if (!mounted) return;
-      setState(() {
-        _displayedCandidates = candidates;
-      });
-    }).catchError((_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to filter candidates by skills'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    });
+    _displayedCandidates = _allCandidates.where((candidate) {
+      final candidateSkills = candidate.skills
+          .split(',')
+          .map((s) => s.trim().toLowerCase())
+          .where((s) => s.isNotEmpty)
+          .toSet();
+
+      return _selectedSkills.every((requiredSkill) =>
+          candidateSkills.contains(requiredSkill.toLowerCase()));
+    }).toList();
+  }
+
+  List<String> _availableSkills() {
+    final skills = <String>{};
+    for (final candidate in _allCandidates) {
+      final tokens = candidate.skills
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty);
+      skills.addAll(tokens);
+    }
+    final ordered = skills.toList()..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return ordered;
   }
 
   Future<void> _markUserAsSelected(Candidate candidate) async {
@@ -128,60 +144,86 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedCount = _allCandidates.where((c) => c.isSelected).length;
+    final availableSkills = _availableSkills();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F3EA),
+      backgroundColor: const Color(0xFFF6F3EA),
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text('Admin Dashboard', style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton.tonalIcon(
+              onPressed: () => _logout(context),
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppTheme.navy.withValues(alpha: 0.08),
+                foregroundColor: AppTheme.navy,
+              ),
+            ),
           ),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Padding(
+          : Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFF8F5EE), Color(0xFFEFEDE7), Color(0xFFF7F3EA)],
+                ),
+              ),
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: [
-                            _metricTile('Candidates', _allCandidates.length.toString()),
-                            _metricTile('Filtered', _displayedCandidates.length.toString()),
-                            _metricTile('Selected', selectedCount.toString()),
-                          ],
-                        ),
-                        const SizedBox(height: 14),
-                        TextField(
-                          controller: _filterController,
-                          decoration: InputDecoration(
-                            labelText: 'Filter by skill words separated by comma (example: Flutter, AWS)',
-                            prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _filterController.text.isNotEmpty
-                                ? IconButton(
-                                    onPressed: () {
-                                      _filterController.clear();
-                                      _filterResults();
-                                    },
-                                    icon: const Icon(Icons.close),
-                                  )
-                                : null,
-                          ),
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: const Color(0xFFE8E0CF)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.navy.withValues(alpha: 0.06),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
                         ),
                       ],
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final compact = constraints.maxWidth < 980;
+
+                        if (compact) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildOverviewSection(selectedCount),
+                              const SizedBox(height: 16),
+                              const Divider(height: 1),
+                              const SizedBox(height: 16),
+                              _buildFilterSection(availableSkills),
+                            ],
+                          );
+                        }
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 4,
+                              child: _buildOverviewSection(selectedCount),
+                            ),
+                            const SizedBox(width: 26),
+                            Expanded(
+                              flex: 6,
+                              child: _buildFilterSection(availableSkills),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -189,7 +231,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: _displayedCandidates.isEmpty
                         ? Center(
                             child: Text(
-                              'No candidates found for that exact skill set.',
+                              'No candidates found for selected skills.',
                               style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600),
                             ),
                           )
@@ -208,7 +250,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 padding: const EdgeInsets.symmetric(vertical: 4),
                                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: crossAxisCount,
-                                  childAspectRatio: 0.65,
+                                  childAspectRatio: 0.8,
                                   crossAxisSpacing: 18,
                                   mainAxisSpacing: 18,
                                 ),
@@ -232,7 +274,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _metricTile(String title, String value) {
     return Container(
-      width: 160,
+      width: 168,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF8F5EE),
@@ -242,11 +284,98 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(color: Colors.grey.shade700)),
+          Text(title, style: TextStyle(color: Colors.grey.shade700, fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
-          Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.navy),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOverviewSection(int selectedCount) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Talent Overview',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.navy,
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Live hiring insights and quick status snapshot.',
+          style: TextStyle(color: AppTheme.ink),
+        ),
+        const SizedBox(height: 14),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _metricTile('Candidates', _allCandidates.length.toString()),
+            _metricTile('Filtered', _displayedCandidates.length.toString()),
+            _metricTile('Selected', selectedCount.toString()),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection(List<String> availableSkills) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.tune_rounded, color: AppTheme.navy, size: 18),
+            const SizedBox(width: 6),
+            const Text(
+              'Filter By Skills',
+              style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.navy),
+            ),
+            const Spacer(),
+            if (_selectedSkills.isNotEmpty)
+              TextButton.icon(
+                onPressed: _clearSkillFilter,
+                icon: const Icon(Icons.close_rounded, size: 16),
+                label: const Text('Clear'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: availableSkills.map((skill) {
+            final selected = _selectedSkills.contains(skill);
+            return FilterChip(
+              selected: selected,
+              label: Text(skill),
+              showCheckmark: false,
+              onSelected: (_) => _toggleSkill(skill),
+              selectedColor: AppTheme.navy,
+              backgroundColor: const Color(0xFFF8F4EB),
+              side: BorderSide(
+                color: selected ? AppTheme.navy : const Color(0xFFE0D7C3),
+              ),
+              labelStyle: TextStyle(
+                color: selected ? Colors.white : AppTheme.ink,
+                fontWeight: FontWeight.w600,
+              ),
+            );
+          }).toList(),
+        ),
+        if (availableSkills.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text('No skills available yet.', style: TextStyle(color: Colors.black54)),
+          ),
+      ],
     );
   }
 }

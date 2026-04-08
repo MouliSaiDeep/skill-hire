@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/candidate_model.dart';
+import '../theme/app_theme.dart';
 
 class CandidateCard extends StatefulWidget {
   final Candidate candidate;
@@ -47,32 +48,35 @@ class _CandidateCardState extends State<CandidateCard> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 130,
-            height: 130,
+            width: 98,
+            height: 98,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(18),
               color: Colors.white,
+              border: Border.all(color: const Color(0xFFE1D8C4), width: 1.2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blueAccent.withValues(alpha: 0.2),
-                  blurRadius: 15.0,
-                  spreadRadius: 4.0,
+                  color: AppTheme.navy.withValues(alpha: 0.12),
+                  blurRadius: 16.0,
+                  spreadRadius: 1.0,
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: ClipOval(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
               child: widget.candidate.photoUrl.isNotEmpty
                   ? Image.network(
                       widget.candidate.photoUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.person, size: 65, color: Colors.grey.shade400);
+                        return Icon(Icons.person, size: 48, color: Colors.grey.shade400);
                       },
                     )
-                  : Icon(Icons.person, size: 65, color: Colors.grey.shade400),
+                  : Icon(Icons.person, size: 48, color: Colors.grey.shade400),
             ),
           ),
-          const SizedBox(height: 24.0),
+          const SizedBox(height: 16.0),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
@@ -80,7 +84,7 @@ class _CandidateCardState extends State<CandidateCard> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                fontSize: 22.0,
+                fontSize: 19.0,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
                 letterSpacing: 0.5,
@@ -90,16 +94,16 @@ class _CandidateCardState extends State<CandidateCard> {
           ),
           const SizedBox(height: 12.0),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.blueAccent.withValues(alpha: 0.08),
+              color: AppTheme.navy.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
               "Hover to view details",
               style: TextStyle(
-                color: Colors.blueAccent,
-                fontSize: 13.0,
+                color: AppTheme.navy,
+                fontSize: 12.0,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -125,11 +129,11 @@ class _CandidateCardState extends State<CandidateCard> {
           ),
         ],
         border: Border.all(
-          color: Colors.blueAccent.withValues(alpha: 0.2),
+          color: AppTheme.navy.withValues(alpha: 0.2),
           width: 1.5,
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 18.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -145,12 +149,12 @@ class _CandidateCardState extends State<CandidateCard> {
             ),
             textAlign: TextAlign.center,
           ),
-          const Divider(height: 24, thickness: 1),
+          const Divider(height: 18, thickness: 1),
           
           _buildInfoRow(Icons.email_outlined, widget.candidate.email),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 8.0),
           _buildInfoRow(Icons.phone_outlined, widget.candidate.phone),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: 8.0),
           _buildInfoRow(
               widget.candidate.gender.toLowerCase() == 'female' 
                   ? Icons.female 
@@ -176,16 +180,16 @@ class _CandidateCardState extends State<CandidateCard> {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.blueAccent.withValues(alpha: 0.08),
+                  color: AppTheme.navy.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+                  border: Border.all(color: AppTheme.navy.withValues(alpha: 0.2)),
                 ),
                 child: Text(
                   s.trim(),
                   style: const TextStyle(
                     fontSize: 12.0,
                     fontWeight: FontWeight.w600,
-                    color: Colors.blueAccent,
+                    color: AppTheme.navy,
                   ),
                 ),
               );
@@ -246,12 +250,12 @@ class _CandidateCardState extends State<CandidateCard> {
           ),
         ),
         
-        const SizedBox(height: 16.0),
+        const SizedBox(height: 10.0),
         
         // 2. The Button below the card
         SizedBox(
           width: double.infinity,
-          height: 48,
+          height: 44,
           child: ElevatedButton.icon(
             onPressed: widget.candidate.isSelected ? null : widget.onSelectPressed,
             icon: Icon(
@@ -267,7 +271,7 @@ class _CandidateCardState extends State<CandidateCard> {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.candidate.isSelected ? Colors.green : Colors.blueAccent,
+              backgroundColor: widget.candidate.isSelected ? Colors.green : AppTheme.navy,
               foregroundColor: Colors.white,
               disabledBackgroundColor: Colors.green.withValues(alpha: 0.7),
               disabledForegroundColor: Colors.white,
@@ -275,7 +279,7 @@ class _CandidateCardState extends State<CandidateCard> {
                 borderRadius: BorderRadius.circular(14.0),
               ),
               elevation: widget.candidate.isSelected ? 0 : 4,
-              shadowColor: Colors.blueAccent.withValues(alpha: 0.4),
+              shadowColor: AppTheme.navy.withValues(alpha: 0.35),
             ),
           ),
         ),

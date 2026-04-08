@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 
 class ApiEndpoints {
-  static const String _defaultPort = '8080';
-  static const String _frontendRouteToken = 'frontend-route';
-  static const String _backendRouteToken = 'skill-hire-route';
+  static const String _frontendHost =
+      'frontend-route-23mh1a05l8-dev.apps.rm3.7wse.p1.openshiftapps.com';
+  static const String _backendHost =
+      'skill-hire-route-23mh1a05l8-dev.apps.rm3.7wse.p1.openshiftapps.com';
+  static const String _backendOrigin = 'https://$_backendHost';
 
   static String get baseUrl {
     const defined = String.fromEnvironment('API_BASE_URL');
@@ -12,30 +14,14 @@ class ApiEndpoints {
     }
 
     if (kIsWeb) {
-      if (kReleaseMode) {
-        final current = Uri.base;
-
-        if (current.host == 'localhost' || current.host == '127.0.0.1') {
-          return '${current.scheme}://${current.host}:$_defaultPort';
-        }
-
-        final backendHost = current.host.replaceFirst(_frontendRouteToken, _backendRouteToken);
-
-        if (backendHost != current.host) {
-          return '${current.scheme}://$backendHost';
-        }
-
-        return current.origin;
+      final current = Uri.base;
+      if (current.host == _frontendHost) {
+        return _backendOrigin;
       }
-
-      return 'http://localhost:$_defaultPort';
+      return _backendOrigin;
     }
 
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:$_defaultPort';
-    }
-
-    return 'http://localhost:$_defaultPort';
+    return _backendOrigin;
   }
 
   static String get candidateBase => '$baseUrl/candidate';
