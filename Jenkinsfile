@@ -56,6 +56,8 @@ pipeline {
                         bat 'kubectl apply -f frontend-deployment.yaml -n 23mh1a05l8-dev'
                         bat 'kubectl apply -f frontend-service.yaml -n 23mh1a05l8-dev'
                         bat 'kubectl apply -f frontend-route.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl rollout restart deployment/skill-hire-deployment -n 23mh1a05l8-dev'
+                        bat 'kubectl rollout restart deployment/frontend-deployment -n 23mh1a05l8-dev'
                     }
                 }
             }
