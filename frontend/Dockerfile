@@ -11,7 +11,7 @@ FROM nginx:alpine
 COPY --from=builder /app/build/web /usr/share/nginx/html
 # Custom Nginx configuration for SPA routing
 RUN echo 'server { \
- listen 80; \
+ listen 8080; \
  server_name localhost; \
  root /usr/share/nginx/html; \
  index index.html; \
@@ -19,5 +19,5 @@ RUN echo 'server { \
  try_files $uri $uri/ /index.html; \
  } \
 }' > /etc/nginx/conf.d/default.conf
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
