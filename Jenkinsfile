@@ -48,7 +48,7 @@ pipeline {
 
         stage('Deploy to OpenShift') {
             steps {
-                withKubeConfig([credentialsId: OPENSHIFT_CRED, serverUrl: OPENSHIFT_SERVER]) {
+                withKubeConfig([credentialsId: env.OPENSHIFT_CRED, serverUrl: env.OPENSHIFT_SERVER]) {
                     dir('openshift') {
                         bat 'kubectl apply -f skill-hire-deployment.yaml'
                         bat 'kubectl apply -f skill-hire-service.yaml'
