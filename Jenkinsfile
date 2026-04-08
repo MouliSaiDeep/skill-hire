@@ -50,6 +50,7 @@ pipeline {
             steps {
                 withKubeConfig([credentialsId: env.OPENSHIFT_CRED, serverUrl: env.OPENSHIFT_SERVER]) {
                     dir('openshift') {
+                        bat 'kubectl get namespaces'
                         bat 'kubectl apply -f skill-hire-deployment.yaml'
                         bat 'kubectl apply -f skill-hire-service.yaml'
                         bat 'kubectl apply -f skill-hire-route.yaml'
