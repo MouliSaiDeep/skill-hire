@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 class ApiEndpoints {
   static const String _defaultPort = '8080';
+  static const String _frontendRouteToken = 'frontend-route';
+  static const String _backendRouteToken = 'skill-hire-route';
 
   static String get baseUrl {
     const defined = String.fromEnvironment('API_BASE_URL');
@@ -10,6 +12,17 @@ class ApiEndpoints {
     }
 
     if (kIsWeb) {
+      if (kReleaseMode) {
+        final current = Uri.base;
+        final backendHost = current.host.replaceFirst(_frontendRouteToken, _backendRouteToken);
+
+        if (backendHost != current.host) {
+          return '${current.scheme}://$backendHost';
+        }
+
+        return current.origin;
+      }
+
       return 'http://localhost:$_defaultPort';
     }
 

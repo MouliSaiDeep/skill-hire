@@ -1,6 +1,7 @@
 package com.devops.skill_hire.service;
 
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 import com.devops.skill_hire.document.Recruiter;
 import com.devops.skill_hire.exception.ApiException;
@@ -42,7 +43,11 @@ public class AdminAuthService {
 		recruiter.setPassword(passwordEncoder.encode(password));
 
 		Recruiter saved = recruiterRepository.save(recruiter);
-		return Map.of("id", saved.getId(), "recruiterName", saved.getRecruiterName(), "email", saved.getEmail());
+		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("id", saved.getId());
+		response.put("recruiterName", saved.getRecruiterName());
+		response.put("email", saved.getEmail());
+		return response;
 	}
 
 	public Map<String, Object> loginAdmin(Map<String, String> request) {
@@ -60,7 +65,11 @@ public class AdminAuthService {
 			throw new ApiException(HttpStatus.UNAUTHORIZED, "invalid admin credentials");
 		}
 
-		return Map.of("id", recruiter.getId(), "recruiterName", recruiter.getRecruiterName(), "email", recruiter.getEmail());
+		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("id", recruiter.getId());
+		response.put("recruiterName", recruiter.getRecruiterName());
+		response.put("email", recruiter.getEmail());
+		return response;
 	}
 
 	private String normalize(String value) {
