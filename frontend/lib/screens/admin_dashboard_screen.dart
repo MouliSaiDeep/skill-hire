@@ -5,7 +5,7 @@ import '../widgets/candidate_card.dart';
 import 'admin_login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  static const String routeName = '/admin-dashboard';
+  static const String routeName = '/admin/dashboard';
 
   const AdminDashboardScreen({super.key});
 

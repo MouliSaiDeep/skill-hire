@@ -6,6 +6,23 @@ import '../models/candidate_model.dart';
 import 'api_endpoints.dart';
 
 class ApiService {
+  static Map<String, dynamic> _decodeObjectOrEmpty(String body) {
+    if (body.trim().isEmpty) {
+      return <String, dynamic>{};
+    }
+
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+    } catch (_) {
+      // Non-JSON responses (like HTML error pages) should not crash callers.
+    }
+
+    return <String, dynamic>{};
+  }
+
   static Future<Map<String, dynamic>> signup({
     required String name,
     required String email,
@@ -66,17 +83,19 @@ class ApiService {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      final Map<String, dynamic> decoded = response.body.isNotEmpty
-          ? jsonDecode(response.body) as Map<String, dynamic>
-          : <String, dynamic>{};
+      final Map<String, dynamic> decoded = _decodeObjectOrEmpty(response.body);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {'success': true, 'message': 'Login successful', 'data': decoded};
       }
 
+      final fallback = response.statusCode == 404
+          ? 'Backend endpoint not found. Check API base URL and backend route mapping.'
+          : 'Invalid admin credentials';
+
       return {
         'success': false,
-        'message': decoded['message']?.toString() ?? 'Invalid Admin Credentials'
+        'message': decoded['message']?.toString() ?? fallback,
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -99,9 +118,7 @@ class ApiService {
         }),
       );
 
-      final Map<String, dynamic> decoded = response.body.isNotEmpty
-          ? jsonDecode(response.body) as Map<String, dynamic>
-          : <String, dynamic>{};
+      final Map<String, dynamic> decoded = _decodeObjectOrEmpty(response.body);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {'success': true, 'message': 'Admin registered successfully', 'data': decoded};

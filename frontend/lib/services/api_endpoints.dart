@@ -14,6 +14,11 @@ class ApiEndpoints {
     if (kIsWeb) {
       if (kReleaseMode) {
         final current = Uri.base;
+
+        if (current.host == 'localhost' || current.host == '127.0.0.1') {
+          return '${current.scheme}://${current.host}:$_defaultPort';
+        }
+
         final backendHost = current.host.replaceFirst(_frontendRouteToken, _backendRouteToken);
 
         if (backendHost != current.host) {
@@ -33,10 +38,10 @@ class ApiEndpoints {
     return 'http://localhost:$_defaultPort';
   }
 
-  static String get authBase => '$baseUrl/api/auth';
-  static String get adminBase => '$baseUrl/api/admin';
+  static String get candidateBase => '$baseUrl/candidate';
+  static String get adminBase => '$baseUrl/admin';
 
-  static String get signup => '$authBase/signup';
+  static String get signup => '$candidateBase/apply';
   static String get adminLogin => '$adminBase/login';
   static String get adminRegister => '$adminBase/register';
   static String get candidates => '$adminBase/candidates';

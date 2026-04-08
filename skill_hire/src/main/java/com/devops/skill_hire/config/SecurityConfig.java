@@ -31,9 +31,9 @@ public class SecurityConfig {
 				.csrf(csrf -> csrf.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(HttpMethod.POST, "/api/admin/login", "/api/admin/register").permitAll()
-						.requestMatchers("/api/admin/**").permitAll()
-						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/admin/login", "/admin/register").permitAll()
+						.requestMatchers("/admin/**").permitAll()
+						.requestMatchers("/candidate/**").permitAll()
 						.anyRequest().authenticated())
 				.httpBasic(Customizer.withDefaults());
 		return http.build();

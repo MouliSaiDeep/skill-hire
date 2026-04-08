@@ -8,7 +8,7 @@ import '../services/api_service.dart';
 import 'admin_login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
-  static const routeName = '/signup';
+  static const routeName = '/candidate/apply';
 
   const SignupScreen({super.key});
 

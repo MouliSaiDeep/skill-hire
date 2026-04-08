@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
+import 'admin_login_screen.dart';
 
 class AdminRegisterScreen extends StatefulWidget {
-  static const String routeName = '/admin-register';
+  static const String routeName = '/admin/register';
 
   const AdminRegisterScreen({super.key});
 
@@ -48,64 +50,103 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Admin Registration')),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF6EFE3), Color(0xFFE9ECF4)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF7F3EA), Color(0xFFE9ECF4), Color(0xFFF7F3EA)],
           ),
         ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Create Admin Account', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(labelText: 'Recruiter Name'),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Recruiter name is required' : null,
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: Card(
+                  color: Colors.white,
+                  elevation: 10,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'SkillHire Admin',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppTheme.navy,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Create Admin Account',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: AppTheme.ink, fontSize: 16, fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 20),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(labelText: 'Recruiter Name'),
+                            validator: (v) => (v == null || v.trim().isEmpty) ? 'Recruiter name is required' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(labelText: 'Email'),
+                            validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: true,
+                            decoration: const InputDecoration(labelText: 'Password'),
+                            validator: (v) => (v == null || v.length < 8) ? 'Minimum 8 characters' : null,
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _confirmController,
+                            obscureText: true,
+                            decoration: const InputDecoration(labelText: 'Confirm Password'),
+                            validator: (v) => v != _passwordController.text ? 'Passwords do not match' : null,
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _loading ? null : _register,
+                              child: _loading
+                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Text('Create Admin'),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('Already have an account?', style: TextStyle(color: AppTheme.ink)),
+                              TextButton(
+                                onPressed: _loading
+                                    ? null
+                                    : () => Navigator.of(context).pushReplacementNamed(AdminLoginScreen.routeName),
+                                child: const Text(
+                                  'Sign In',
+                                  style: TextStyle(color: AppTheme.navy, fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(labelText: 'Email'),
-                        validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Password'),
-                        validator: (v) => (v == null || v.length < 8) ? 'Minimum 8 characters' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _confirmController,
-                        obscureText: true,
-                        decoration: const InputDecoration(labelText: 'Confirm Password'),
-                        validator: (v) => v != _passwordController.text ? 'Passwords do not match' : null,
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _loading ? null : _register,
-                          child: _loading
-                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Text('Create Admin'),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

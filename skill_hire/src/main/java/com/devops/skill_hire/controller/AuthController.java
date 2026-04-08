@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/candidate")
 @CrossOrigin(origins = "*")
 public class AuthController {
     @Autowired
@@ -25,7 +25,7 @@ public class AuthController {
     private S3Service s3Service;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    @PostMapping(value = "/signup", consumes = "multipart/form-data")
+    @PostMapping(value = "/apply", consumes = "multipart/form-data")
     public ResponseEntity<?> signup(
             @RequestParam String name,
             @RequestParam String email,
