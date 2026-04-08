@@ -50,12 +50,12 @@ pipeline {
             steps {
                 withKubeConfig([credentialsId: env.OPENSHIFT_CRED, serverUrl: env.OPENSHIFT_SERVER]) {
                     dir('openshift') {
-                        bat 'kubectl apply -f skill-hire-deployment.yaml'
-                        bat 'kubectl apply -f skill-hire-service.yaml'
-                        bat 'kubectl apply -f skill-hire-route.yaml'
-                        bat 'kubectl apply -f frontend-deployment.yaml'
-                        bat 'kubectl apply -f frontend-service.yaml'
-                        bat 'kubectl apply -f frontend-route.yaml'
+                        bat 'kubectl apply -f skill-hire-deployment.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl apply -f skill-hire-service.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl apply -f skill-hire-route.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl apply -f frontend-deployment.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl apply -f frontend-service.yaml -n 23mh1a05l8-dev'
+                        bat 'kubectl apply -f frontend-route.yaml -n 23mh1a05l8-dev'
                     }
                 }
             }
