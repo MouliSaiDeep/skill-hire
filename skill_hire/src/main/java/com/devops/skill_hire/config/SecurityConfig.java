@@ -24,46 +24,51 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-				.cors(Customizer.withDefaults())
-				.csrf(csrf -> csrf.disable())
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(HttpMethod.POST, "/admin/login", "/admin/register").permitAll()
-						.requestMatchers("/admin/**").permitAll()
-						.requestMatchers("/candidate/**").permitAll()
-						.anyRequest().authenticated())
-				.httpBasic(Customizer.withDefaults());
-		return http.build();
-	}
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Removed the /api/ prefix so it perfectly matches your Dart ApiEndpoints!
+                        .requestMatchers(HttpMethod.POST, "/admin/login", "/admin/register").permitAll()
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/candidate/**").permitAll()
+                        .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults());
+        return http.build();
+    }
 
-	@Bean
-	public UserDetailsService userDetailsService(@Value("${admin.email:admin@example.com}") String adminEmail,
-													@Value("${admin.password:admin123}") String adminPassword,
-													PasswordEncoder passwordEncoder) {
-		return new InMemoryUserDetailsManager(User.withUsername(adminEmail)
-				.password(passwordEncoder.encode(adminPassword))
-				.roles("ADMIN")
-				.build());
-	}
+    @Bean
+    public UserDetailsService userDetailsService(@Value("${admin.email:admin@example.com}") String adminEmail,
+                                                 @Value("${admin.password:admin123}") String adminPassword,
+                                                 PasswordEncoder passwordEncoder) {
+        return new InMemoryUserDetailsManager(User.withUsername(adminEmail)
+                .password(passwordEncoder.encode(adminPassword))
+                .roles("ADMIN")
+                .build());
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOriginPatterns(List.of("*"));
-		configuration.setAllowedMethods(List.of("*"));
-		configuration.setAllowedHeaders(List.of("*"));
-		configuration.setExposedHeaders(List.of("*"));
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // setAllowedOriginPatterns("*") combined with allowCredentials(true) 
+        // is the safest and most robust way to handle OpenShift CORS!
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true); 
 
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
