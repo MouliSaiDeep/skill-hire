@@ -11,7 +11,6 @@ import com.devops.skill_hire.service.AdminAuthService;
 import com.devops.skill_hire.services.SesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = "*")
+
 public class AdminController {
 
 	private final AdminAuthService adminAuthService;
@@ -44,7 +43,7 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> adminLogin(@RequestBody Map<String, String> body) {
 		return ResponseEntity.ok(adminAuthService.loginAdmin(body));
 	}
-
+	
 	@GetMapping("/candidates")
 	public ResponseEntity<List<Map<String, Object>>> listCandidates(
 			@RequestParam(required = false) String skill,

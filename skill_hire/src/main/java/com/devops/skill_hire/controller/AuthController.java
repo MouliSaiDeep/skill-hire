@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/candidate")
-@CrossOrigin(origins = "*")
 public class AuthController {
     @Autowired
     private UserRepository userRepository;
