@@ -24,9 +24,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
     final result = await ApiService.adminLogin(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+      email: email,
+      password: password,
     );
     setState(() => _loading = false);
 
@@ -34,7 +36,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
     final ok = result['success'] == true;
     if (ok) {
-      Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.routeName);
+      if (result['data'] != null && result['data']['otp_required'] == true) {
+        _showOtpDialog(email);
+      } else {
+        Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.routeName);
+      }
       return;
     }
 
@@ -43,6 +49,74 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         content: Text(result['message']?.toString() ?? 'Invalid admin credentials'),
         backgroundColor: Colors.redAccent,
       ),
+    );
+  }
+
+  Future<void> _showOtpDialog(String email) async {
+    final otpController = TextEditingController();
+    bool dialogLoading = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Enter OTP'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('A 4-digit OTP has been sent to your email.'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: otpController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'OTP',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: dialogLoading ? null : () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: dialogLoading
+                    ? null
+                    : () async {
+                        if (otpController.text.trim().isEmpty) return;
+                        setStateDialog(() => dialogLoading = true);
+                        final result = await ApiService.verifyAdminLoginOtp(
+                          email: email,
+                          otp: otpController.text.trim(),
+                        );
+                        setStateDialog(() => dialogLoading = false);
+                        
+                        if (!mounted) return;
+                        if (result['success'] == true) {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(context).pushReplacementNamed(AdminDashboardScreen.routeName);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(result['message'] ?? 'Invalid OTP'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                child: dialogLoading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Verify'),
+              ),
+            ],
+          );
+        });
+      },
     );
   }
 
@@ -99,7 +173,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                               labelText: 'Admin Email',
                               prefixIcon: Icon(Icons.alternate_email),
                             ),
-                            validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
+                            validator: (v) => (v == null || !RegExp(r'^[\w.-]+@[\w.-]+\.\w{2,}$').hasMatch(v)) ? 'Valid email is required' : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(

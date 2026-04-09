@@ -8,7 +8,9 @@ import com.devops.skill_hire.document.User;
 import com.devops.skill_hire.exception.ApiException;
 import com.devops.skill_hire.repository.UserRepository;
 import com.devops.skill_hire.service.AdminAuthService;
+import com.devops.skill_hire.services.OtpService;
 import com.devops.skill_hire.services.SesService;
+import com.devops.skill_hire.services.SmtpEmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,21 +29,47 @@ public class AdminController {
 	private final AdminAuthService adminAuthService;
 	private final UserRepository userRepository;
 	private final SesService sesService;
+	private final SmtpEmailService smtpEmailService;
+	private final OtpService otpService;
 
-	public AdminController(AdminAuthService adminAuthService, UserRepository userRepository, SesService sesService) {
+	public AdminController(AdminAuthService adminAuthService, UserRepository userRepository, SesService sesService, SmtpEmailService smtpEmailService, OtpService otpService) {
 		this.adminAuthService = adminAuthService;
 		this.userRepository = userRepository;
 		this.sesService = sesService;
+		this.smtpEmailService = smtpEmailService;
+		this.otpService = otpService;
 	}
 
 	@PostMapping("/register")
 	public ResponseEntity<Map<String, Object>> registerAdmin(@RequestBody Map<String, String> body) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(adminAuthService.registerAdmin(body));
+		return ResponseEntity.ok(adminAuthService.registerAdmin(body));
+	}
+
+	@PostMapping("/register/verify")
+	public ResponseEntity<Map<String, Object>> verifyRegisterAdmin(@RequestBody Map<String, String> body) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(adminAuthService.verifyRegisterOtp(body));
 	}
 
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> adminLogin(@RequestBody Map<String, String> body) {
 		return ResponseEntity.ok(adminAuthService.loginAdmin(body));
+	}
+
+	@PostMapping("/login/verify")
+	public ResponseEntity<Map<String, Object>> verifyAdminLogin(@RequestBody Map<String, String> body) {
+		return ResponseEntity.ok(adminAuthService.verifyLoginOtp(body));
+	}
+
+	@GetMapping("/test-otp")
+	public ResponseEntity<Map<String, String>> testOtp() {
+		String email = "pediredlarishi2005@gmail.com";
+		String otp = otpService.generateAndStoreOtp(email);
+		try {
+			smtpEmailService.sendOtpEmail(email, otp);
+			return ResponseEntity.ok(Map.of("message", "Random OTP (" + otp + ") email via SMTP triggered. Check inbox."));
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+		}
 	}
 	
 	@GetMapping("/candidates")
@@ -98,6 +126,11 @@ public class AdminController {
 	public ResponseEntity<Map<String, Object>> selectCandidate(@PathVariable String id) {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "candidate not found"));
+
+		if (user.isSelected()) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(Map.of("message", "Candidate already selected"));
+		}
 
 		user.setSelected(true);
 		userRepository.save(user);

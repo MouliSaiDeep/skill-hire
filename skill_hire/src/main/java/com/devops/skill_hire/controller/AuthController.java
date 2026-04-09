@@ -7,7 +7,6 @@ import com.devops.skill_hire.services.S3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,7 +21,6 @@ public class AuthController {
     private UserRepository userRepository;
     @Autowired
     private S3Service s3Service;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @PostMapping(value = "/apply", consumes = "multipart/form-data")
     public ResponseEntity<?> signup(
@@ -38,6 +36,13 @@ public class AuthController {
         }
         if (pic == null || pic.isEmpty()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "profile photo is required");
+        }
+        if (pic.getSize() > 5 * 1024 * 1024) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "File too large (max 5MB)");
+        }
+        String contentType = pic.getContentType();
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/webp"))) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Only JPEG, PNG, and WebP images are allowed");
         }
         if (userRepository.findByEmail(email).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("message","Email already registered"));

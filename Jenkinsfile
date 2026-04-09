@@ -1,12 +1,12 @@
-﻿pipeline {
+pipeline {
     agent any
     tools {
         maven 'Maven'
         jdk 'java'
     }
     environment {
-        BACKEND_IMAGE = 'moulisaideep/skill-hire'
-        FRONTEND_IMAGE = 'moulisaideep/skill-hire-frontend'
+        BACKEND_IMAGE = 'rishi2335/skill-hire'
+        FRONTEND_IMAGE = 'rishi2335/skill-hire-frontend'
         OPENSHIFT_SERVER = 'https://api.rm3.7wse.p1.openshiftapps.com:6443'
         OPENSHIFT_CRED = 'openshift-credentials-id'
     }
@@ -67,3 +67,5 @@
         failure { echo 'Pipeline failed. Check logs.' }
     }
 }
+
+

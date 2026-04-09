@@ -25,26 +25,115 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _loading = true);
+    final recruiterName = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
     final result = await ApiService.adminRegister(
-      recruiterName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+      recruiterName: recruiterName,
+      email: email,
+      password: password,
     );
     setState(() => _loading = false);
 
     if (!mounted) return;
 
     final ok = result['success'] == true;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(result['message']?.toString() ?? (ok ? 'Registered' : 'Registration failed')),
-        backgroundColor: ok ? Colors.green : Colors.redAccent,
-      ),
-    );
 
     if (ok) {
-      Navigator.of(context).pop();
+      if (result['data'] != null && result['data']['otp_required'] == true) {
+        _showOtpDialog(recruiterName, email, password);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registered! Please login.')),
+        );
+        Navigator.of(context).pop();
+      }
+      return;
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message']?.toString() ?? 'Registration failed'),
+        backgroundColor: Colors.redAccent,
+      ),
+    );
+  }
+
+  Future<void> _showOtpDialog(String recruiterName, String email, String password) async {
+    final otpController = TextEditingController();
+    bool dialogLoading = false;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text('Enter OTP'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('A 4-digit OTP has been sent to your email.'),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: otpController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 4,
+                  decoration: const InputDecoration(
+                    labelText: 'OTP',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: dialogLoading ? null : () => Navigator.of(ctx).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: dialogLoading
+                    ? null
+                    : () async {
+                        if (otpController.text.trim().isEmpty) return;
+                        setStateDialog(() => dialogLoading = true);
+                        final result = await ApiService.verifyAdminRegisterOtp(
+                          recruiterName: recruiterName,
+                          email: email,
+                          password: password,
+                          otp: otpController.text.trim(),
+                        );
+                        setStateDialog(() => dialogLoading = false);
+
+                        if (!mounted) return;
+                        if (result['success'] == true) {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Admin successfully registered. Please sign in!'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                          Navigator.of(context).pushReplacementNamed(AdminLoginScreen.routeName);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(result['message'] ?? 'Invalid OTP'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                child: dialogLoading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Verify'),
+              ),
+            ],
+          );
+        });
+      },
+    );
   }
 
   @override
@@ -102,7 +191,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             decoration: const InputDecoration(labelText: 'Email'),
-                            validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
+                            validator: (v) => (v == null || !RegExp(r'^[\w.-]+@[\w.-]+\.\w{2,}$').hasMatch(v)) ? 'Valid email is required' : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(

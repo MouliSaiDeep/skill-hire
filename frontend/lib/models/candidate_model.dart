@@ -32,46 +32,4 @@ class Candidate {
     );
   }
 
-  // Mock data generator for testing
-  static List<Candidate> getMockData() {
-    return [
-      Candidate(
-        id: '1',
-        name: 'Alice Johnson',
-        email: 'alice.johnson@example.com',
-        phone: '123-456-7890',
-        skills: 'Flutter, Dart, Git, AWS',
-        photoUrl:
-            'https://cdn-icons-png.flaticon.com/512/3135/3135715.png', // Generic URL for testing
-        gender: 'Female',
-      ),
-      Candidate(
-        id: '2',
-        name: 'Bob Smith',
-        email: 'bob.smith@example.com',
-        phone: '987-654-3210',
-        skills: 'Java, Spring Boot, MySQL, Docker',
-        photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-        gender: 'Male',
-      ),
-      Candidate(
-        id: '3',
-        name: 'Charlie Davis',
-        email: 'charlie.d@example.com',
-        phone: '555-123-4567',
-        skills: 'Flutter, Firebase, AWS SES, CI/CD',
-        photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-        gender: 'Not Specified',
-      ),
-      Candidate(
-        id: '4',
-        name: 'Diana Evans',
-        email: 'diana.e@example.com',
-        phone: '555-987-6543',
-        skills: 'Python, Django, AWS, OpenShift',
-        photoUrl: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-        gender: 'Female',
-      ),
-    ];
-  }
 }

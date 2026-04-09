@@ -23,6 +23,20 @@ class ApiService {
     return <String, dynamic>{};
   }
 
+  static Future<String?> getToken() async {
+    return null;
+  }
+
+  static Future<Map<String, String>> getAuthHeaders() async {
+    return {
+      'Content-Type': 'application/json',
+    };
+  }
+
+  static Future<void> signOut() async {
+    // No-op since JWT is removed
+  }
+
   static Future<Map<String, dynamic>> signup({
     required String name,
     required String email,
@@ -133,6 +147,65 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> verifyAdminLoginOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.verifyAdminLogin),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      );
+
+      final Map<String, dynamic> decoded = _decodeObjectOrEmpty(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return {'success': true, 'message': 'Login successful', 'data': decoded};
+      }
+
+      return {
+        'success': false,
+        'message': decoded['message']?.toString() ?? 'Invalid OTP',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> verifyAdminRegisterOtp({
+    required String recruiterName,
+    required String email,
+    required String password,
+    required String otp,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.verifyAdminRegister),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'recruiterName': recruiterName,
+          'email': email,
+          'password': password,
+          'otp': otp,
+        }),
+      );
+
+      final Map<String, dynamic> decoded = _decodeObjectOrEmpty(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return {'success': true, 'message': 'Registration successful', 'data': decoded};
+      }
+
+      return {
+        'success': false,
+        'message': decoded['message']?.toString() ?? 'Invalid OTP',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   static Future<List<Candidate>> fetchCandidates({String? skill}) async {
     return fetchCandidatesBySkills(
       skills: (skill != null && skill.trim().isNotEmpty) ? [skill.trim()] : const [],
@@ -152,7 +225,12 @@ class ApiService {
       uri = Uri.parse('${ApiEndpoints.candidates}?$query');
     }
 
-    final response = await http.get(uri);
+    final headers = await getAuthHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 401) {
+      throw Exception('401');
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('Failed to load candidates');
@@ -167,13 +245,21 @@ class ApiService {
 
   static Future<Map<String, dynamic>> selectCandidate(String candidateId) async {
     try {
-      final response = await http.post(Uri.parse(ApiEndpoints.selectCandidate(candidateId)));
+      final headers = await getAuthHeaders();
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.selectCandidate(candidateId)),
+        headers: headers,
+      );
       final Map<String, dynamic> decoded = response.body.isNotEmpty
           ? jsonDecode(response.body) as Map<String, dynamic>
           : <String, dynamic>{};
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {'success': true, ...decoded};
+      }
+
+      if (response.statusCode == 401) {
+        return {'success': false, 'statusCode': 401, 'message': 'Unauthorized'};
       }
 
       return {

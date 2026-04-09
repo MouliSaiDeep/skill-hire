@@ -1,8 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 class ApiEndpoints {
-  static const String _frontendHost =
-      'frontend-route-23mh1a05l8-dev.apps.rm3.7wse.p1.openshiftapps.com';
   static const String _backendHost =
       'skill-hire-route-23mh1a05l8-dev.apps.rm3.7wse.p1.openshiftapps.com';
   static const String _backendOrigin = 'https://$_backendHost';
@@ -13,15 +11,7 @@ class ApiEndpoints {
       return defined;
     }
 
-    if (kIsWeb) {
-      final current = Uri.base;
-      if (current.host == _frontendHost) {
-        return _backendOrigin;
-      }
-      return _backendOrigin;
-    }
-
-    return _backendOrigin;
+    return kDebugMode ? 'http://localhost:8080' : _backendOrigin;
   }
 
   static String get candidateBase => '$baseUrl/candidate';
@@ -29,7 +19,9 @@ class ApiEndpoints {
 
   static String get signup => '$candidateBase/apply';
   static String get adminLogin => '$adminBase/login';
+  static String get verifyAdminLogin => '$adminBase/login/verify';
   static String get adminRegister => '$adminBase/register';
+  static String get verifyAdminRegister => '$adminBase/register/verify';
   static String get candidates => '$adminBase/candidates';
 
   static String selectCandidate(String id) => '$adminBase/candidates/$id/select';

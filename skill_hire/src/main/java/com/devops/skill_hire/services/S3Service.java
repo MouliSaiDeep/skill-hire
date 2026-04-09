@@ -43,7 +43,10 @@ public class S3Service {
         if (!StringUtils.hasText(bucketName)) {
             throw new IllegalStateException("aws.s3.bucket-name is not configured");
         }
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String original = file.getOriginalFilename();
+        String extension = (original != null && original.contains("."))
+            ? original.substring(original.lastIndexOf(".")) : ".jpg";
+        String fileName = UUID.randomUUID().toString() + extension;
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
