@@ -40,8 +40,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _applySkillFilter();
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
+      if (e.toString().contains('401')) {
+        await ApiService.signOut();
+        if (mounted) Navigator.pushReplacementNamed(context, AdminLoginScreen.routeName);
+        return;
+      }
       setState(() {
         _isLoading = false;
       });
@@ -106,13 +111,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Future<void> _markUserAsSelected(Candidate candidate) async {
     final result = await ApiService.selectCandidate(candidate.id);
 
+    if (result['statusCode'] == 401) {
+      await ApiService.signOut();
+      if (mounted) Navigator.pushReplacementNamed(context, AdminLoginScreen.routeName);
+      return;
+    }
+
+    if (!mounted) return;
+
     if (result['success'] == true) {
       setState(() {
         candidate.isSelected = true;
       });
     }
 
-    if (!mounted) return;
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

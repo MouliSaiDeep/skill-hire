@@ -99,6 +99,11 @@ public class AdminController {
 		User user = userRepository.findById(id)
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "candidate not found"));
 
+		if (user.isSelected()) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(Map.of("message", "Candidate already selected"));
+		}
+
 		user.setSelected(true);
 		userRepository.save(user);
 

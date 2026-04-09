@@ -102,7 +102,7 @@ class _AdminRegisterScreenState extends State<AdminRegisterScreen> {
                           TextFormField(
                             controller: _emailController,
                             decoration: const InputDecoration(labelText: 'Email'),
-                            validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
+                            validator: (v) => (v == null || !RegExp(r'^[\w.-]+@[\w.-]+\.\w{2,}$').hasMatch(v)) ? 'Valid email is required' : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(

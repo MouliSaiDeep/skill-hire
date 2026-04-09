@@ -99,7 +99,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                               labelText: 'Admin Email',
                               prefixIcon: Icon(Icons.alternate_email),
                             ),
-                            validator: (v) => (v == null || !v.contains('@')) ? 'Valid email is required' : null,
+                            validator: (v) => (v == null || !RegExp(r'^[\w.-]+@[\w.-]+\.\w{2,}$').hasMatch(v)) ? 'Valid email is required' : null,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(

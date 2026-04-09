@@ -33,7 +33,6 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  flutter_login: ^6.0.0
   google_fonts: ^8.0.2
   http: ^1.6.0
   image_picker: ^1.2.1

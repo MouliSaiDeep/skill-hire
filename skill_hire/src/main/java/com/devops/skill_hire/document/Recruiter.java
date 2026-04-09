@@ -3,6 +3,7 @@ package com.devops.skill_hire.document;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Document(collection = "recruiters")
 public class Recruiter {
@@ -12,6 +13,7 @@ public class Recruiter {
 	private String recruiterName;
 	@Indexed(unique = true)
 	private String email;
+	@JsonIgnore
 	private String password;
 
 	public String getId() {

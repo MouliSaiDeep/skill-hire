@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../models/candidate_model.dart';
@@ -21,6 +22,24 @@ class ApiService {
     }
 
     return <String, dynamic>{};
+  }
+
+  static Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('jwt_token');
+  }
+
+  static Future<Map<String, String>> getAuthHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  static Future<void> signOut() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
   }
 
   static Future<Map<String, dynamic>> signup({
@@ -86,6 +105,17 @@ class ApiService {
       final Map<String, dynamic> decoded = _decodeObjectOrEmpty(response.body);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (decoded['success'] == true && decoded['data'] != null) {
+          final token = decoded['data']['token'];
+          if (token != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('jwt_token', token);
+          }
+        } else if (decoded['token'] != null) {
+          // the backend returned token at the root, or structured different.
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('jwt_token', decoded['token']);
+        }
         return {'success': true, 'message': 'Login successful', 'data': decoded};
       }
 
@@ -152,7 +182,12 @@ class ApiService {
       uri = Uri.parse('${ApiEndpoints.candidates}?$query');
     }
 
-    final response = await http.get(uri);
+    final headers = await getAuthHeaders();
+    final response = await http.get(uri, headers: headers);
+
+    if (response.statusCode == 401) {
+      throw Exception('401');
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('Failed to load candidates');
@@ -167,13 +202,21 @@ class ApiService {
 
   static Future<Map<String, dynamic>> selectCandidate(String candidateId) async {
     try {
-      final response = await http.post(Uri.parse(ApiEndpoints.selectCandidate(candidateId)));
+      final headers = await getAuthHeaders();
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.selectCandidate(candidateId)),
+        headers: headers,
+      );
       final Map<String, dynamic> decoded = response.body.isNotEmpty
           ? jsonDecode(response.body) as Map<String, dynamic>
           : <String, dynamic>{};
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return {'success': true, ...decoded};
+      }
+
+      if (response.statusCode == 401) {
+        return {'success': false, 'statusCode': 401, 'message': 'Unauthorized'};
       }
 
       return {

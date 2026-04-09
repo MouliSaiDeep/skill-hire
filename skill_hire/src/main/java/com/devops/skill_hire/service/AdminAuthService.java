@@ -7,19 +7,23 @@ import com.devops.skill_hire.document.Recruiter;
 import com.devops.skill_hire.exception.ApiException;
 import com.devops.skill_hire.repository.RecruiterRepository;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import com.devops.skill_hire.security.JwtService;
 
 @Service
 public class AdminAuthService {
 
 	private final RecruiterRepository recruiterRepository;
-	private final BCryptPasswordEncoder passwordEncoder;
+	private final PasswordEncoder passwordEncoder;
+	private final JwtService jwtService;
 
-	public AdminAuthService(RecruiterRepository recruiterRepository) {
+	public AdminAuthService(RecruiterRepository recruiterRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
 		this.recruiterRepository = recruiterRepository;
-		this.passwordEncoder = new BCryptPasswordEncoder();
+		this.passwordEncoder = passwordEncoder;
+		this.jwtService = jwtService;
 	}
 
 	public Map<String, Object> registerAdmin(Map<String, String> request) {
@@ -65,7 +69,10 @@ public class AdminAuthService {
 			throw new ApiException(HttpStatus.UNAUTHORIZED, "invalid admin credentials");
 		}
 
+		String token = jwtService.generateToken(recruiter.getEmail(), recruiter.getId());
+
 		Map<String, Object> response = new LinkedHashMap<>();
+		response.put("token", token);
 		response.put("id", recruiter.getId());
 		response.put("recruiterName", recruiter.getRecruiterName());
 		response.put("email", recruiter.getEmail());

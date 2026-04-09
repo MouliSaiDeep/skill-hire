@@ -45,11 +45,13 @@ public class SesService {
 			throw new IllegalArgumentException("recipient email is required");
 		}
 
+		String safeName = userName.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+
 		Message message = Message.builder()
 				.subject(Content.builder().data("Congratulations! You have been Selected!").build())
 				.body(Body.builder()
 						.html(Content.builder()
-								.data("<h2>Hi " + userName + ",</h2><p>We are pleased to inform you that you have been <b>selected</b> by our team.</p><p>We will reach out to you shortly with next steps.</p>")
+								.data("<h2>Hi " + safeName + ",</h2><p>We are pleased to inform you that you have been <b>selected</b> by our team.</p><p>We will reach out to you shortly with next steps.</p>")
 								.build())
 						.build())
 					.build();

@@ -1,4 +1,4 @@
-﻿pipeline {
+pipeline {
     agent any
     tools {
         maven 'Maven'
@@ -67,3 +67,5 @@
         failure { echo 'Pipeline failed. Check logs.' }
     }
 }
+
+

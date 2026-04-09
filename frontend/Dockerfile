@@ -28,7 +28,7 @@ RUN sed -i 's/user  nginx;//g' /etc/nginx/nginx.conf
 RUN sed -i 's/pid        \/var\/run\/nginx.pid;/pid        \/tmp\/nginx.pid;/g' /etc/nginx/nginx.conf
 
 # 3. Grant full write access to Nginx's cache and log folders
-RUN chmod -R 777 /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
+RUN chmod -R 755 /var/cache/nginx /var/run /var/log/nginx /etc/nginx/conf.d
 
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
