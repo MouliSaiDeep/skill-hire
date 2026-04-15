@@ -276,8 +276,9 @@ All endpoints are served by the Spring Boot backend on port `8080`. Base URL in 
 
 | Name | Role | GitHub |
 |---|---|---|
-| MouliSaiDeep | Backend & DevOps | [@MouliSaiDeep](https://github.com/MouliSaiDeep) |
-| Nithin Datta Attili | Flutter Frontend | [@Nithin2745](https://github.com/Nithin2745) |
+| MouliSaiDeep | Flutter Frontend & Docker | [@MouliSaiDeep](https://github.com/MouliSaiDeep) |
+| Nithin Datta Attili | Backend & DevOps | [@Nithin2745](https://github.com/Nithin2745) |
+| Rishi Pediredla | Frontend & AWS SES | [@Rishi1435](https://github.com/Rishi1435) |
 
 ---
 
